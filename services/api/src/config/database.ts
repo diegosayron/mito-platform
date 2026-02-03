@@ -21,6 +21,8 @@ export const initDatabase = async (): Promise<Pool> => {
     max: config.database.poolMax,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
+    statement_timeout: 30000, // 30 seconds
+    query_timeout: 30000, // 30 seconds
   });
 
   // Test connection
@@ -30,7 +32,8 @@ export const initDatabase = async (): Promise<Pool> => {
     client.release();
     return pool;
   } catch (error) {
-    throw new Error(`Failed to connect to database: ${error}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to connect to database: ${errorMessage}`);
   }
 };
 
