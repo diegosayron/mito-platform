@@ -5,10 +5,13 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc && npm run copy-migrations",
+    "copy-migrations": "cpy 'src/database/migrations/*.sql' dist/database/migrations",
     "start": "node dist/server.js",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "migrate": "tsx src/database/migrate.ts",
+    "migrate:prod": "node dist/database/migrate.js"
   },
   "keywords": [
     "mito",
@@ -35,6 +38,7 @@
     "@types/pg": "^8.11.10",
     "@typescript-eslint/eslint-plugin": "^8.18.1",
     "@typescript-eslint/parser": "^8.18.1",
+    "cpy-cli": "^6.0.0",
     "eslint": "^9.17.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
