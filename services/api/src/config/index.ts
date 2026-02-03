@@ -1,0 +1,129 @@
+import dotenv from 'dotenv';
+import path from 'path';
+
+// Load .env file
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+
+interface Config {
+  server: {
+    env: string;
+    port: number;
+    host: string;
+  };
+  database: {
+    host: string;
+    port: number;
+    name: string;
+    user: string;
+    password: string;
+    poolMin: number;
+    poolMax: number;
+  };
+  jwt: {
+    secret: string;
+    expiresIn: string;
+    refreshSecret: string;
+    refreshExpiresIn: string;
+  };
+  redis: {
+    host: string;
+    port: number;
+    password: string;
+  };
+  minio: {
+    endpoint: string;
+    port: number;
+    accessKey: string;
+    secretKey: string;
+    useSSL: boolean;
+    bucket: string;
+  };
+  smtp: {
+    host: string;
+    port: number;
+    user: string;
+    password: string;
+    from: string;
+  };
+  firebase: {
+    projectId: string;
+    clientEmail: string;
+    privateKey: string;
+  };
+  rateLimit: {
+    max: number;
+    timeWindow: number;
+  };
+  cors: {
+    origin: string[];
+  };
+  cdn: {
+    url: string;
+  };
+  moderation: {
+    autoHideReportsThreshold: number;
+  };
+}
+
+const config: Config = {
+  server: {
+    env: process.env.NODE_ENV || 'development',
+    port: parseInt(process.env.PORT || '3000', 10),
+    host: process.env.HOST || '0.0.0.0',
+  },
+  database: {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    name: process.env.DB_NAME || 'mito_db',
+    user: process.env.DB_USER || 'mito_user',
+    password: process.env.DB_PASSWORD || 'mito_password',
+    poolMin: parseInt(process.env.DB_POOL_MIN || '2', 10),
+    poolMax: parseInt(process.env.DB_POOL_MAX || '10', 10),
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key',
+    expiresIn: process.env.JWT_EXPIRES_IN || '15m',
+    refreshSecret: process.env.REFRESH_TOKEN_SECRET || 'your-super-secret-refresh-token-key',
+    refreshExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d',
+  },
+  redis: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379', 10),
+    password: process.env.REDIS_PASSWORD || '',
+  },
+  minio: {
+    endpoint: process.env.MINIO_ENDPOINT || 'localhost',
+    port: parseInt(process.env.MINIO_PORT || '9000', 10),
+    accessKey: process.env.MINIO_ACCESS_KEY || 'minioadmin',
+    secretKey: process.env.MINIO_SECRET_KEY || 'minioadmin',
+    useSSL: process.env.MINIO_USE_SSL === 'true',
+    bucket: process.env.MINIO_BUCKET || 'mito-media',
+  },
+  smtp: {
+    host: process.env.SMTP_HOST || 'smtp.example.com',
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    user: process.env.SMTP_USER || '',
+    password: process.env.SMTP_PASSWORD || '',
+    from: process.env.SMTP_FROM || 'noreply@mito.com',
+  },
+  firebase: {
+    projectId: process.env.FIREBASE_PROJECT_ID || '',
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
+    privateKey: process.env.FIREBASE_PRIVATE_KEY || '',
+  },
+  rateLimit: {
+    max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
+    timeWindow: parseInt(process.env.RATE_LIMIT_TIME_WINDOW || '60000', 10),
+  },
+  cors: {
+    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3001'],
+  },
+  cdn: {
+    url: process.env.CDN_URL || 'https://cdn.example.com',
+  },
+  moderation: {
+    autoHideReportsThreshold: parseInt(process.env.AUTO_HIDE_REPORTS_THRESHOLD || '5', 10),
+  },
+};
+
+export default config;
