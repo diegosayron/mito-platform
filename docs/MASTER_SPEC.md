@@ -10,6 +10,8 @@ Comunidade controlada
 Automação de publicação
 Escalabilidade
 
+Nas telas/interfaces com o usuário, Vamos sempre lembrar de usar telas modernas, "magnética" para o usuário, com cores patriotas, sem exageros, com uso dessas cores de forma harmônica. A lista de conteúdo deve lembrar a plataforma Netflix, considerando que temos várias seções referentes aos conteúdos do app.
+
 ## 2. Visão Geral da Plataforma
 A plataforma MITO é composta por quatro aplicações principais:
 Aplicativo Mobile (Android/iOS)
