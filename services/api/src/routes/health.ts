@@ -6,7 +6,7 @@ export default async function healthRoutes(fastify: FastifyInstance) {
    * Health check endpoint
    * GET /health
    */
-  fastify.get('/health', async (request, reply) => {
+  fastify.get('/health', async (_request, reply) => {
     const health = {
       status: 'ok',
       timestamp: new Date().toISOString(),
@@ -22,7 +22,7 @@ export default async function healthRoutes(fastify: FastifyInstance) {
       const pool = getPool();
       await pool.query('SELECT 1');
       health.services.database = 'ok';
-    } catch (error) {
+    } catch (_error) {
       health.services.database = 'error';
       health.status = 'degraded';
     }
@@ -35,7 +35,7 @@ export default async function healthRoutes(fastify: FastifyInstance) {
    * Readiness check endpoint
    * GET /ready
    */
-  fastify.get('/ready', async (request, reply) => {
+  fastify.get('/ready', async (_request, reply) => {
     try {
       const pool = getPool();
       await pool.query('SELECT 1');
@@ -56,7 +56,7 @@ export default async function healthRoutes(fastify: FastifyInstance) {
    * Liveness check endpoint
    * GET /live
    */
-  fastify.get('/live', async (request, reply) => {
+  fastify.get('/live', async (_request, reply) => {
     return reply.status(200).send({
       status: 'alive',
       timestamp: new Date().toISOString(),
