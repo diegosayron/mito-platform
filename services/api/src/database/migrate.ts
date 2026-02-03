@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Pool } from 'pg';
 import path from 'path';
 import fs from 'fs';

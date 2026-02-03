@@ -20,10 +20,17 @@ Configure the database connection using the following environment variables (PG_
 
 ## Running Migrations
 
-To run all pending migrations:
+To run all pending migrations in development:
 
 ```bash
 npm run migrate
+```
+
+To run migrations in production (after building):
+
+```bash
+npm run build
+npm run migrate:prod
 ```
 
 This will:
