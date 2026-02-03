@@ -1,0 +1,104 @@
+# MITO Platform - Docker Compose Override for Development
+# This file extends docker-compose.yml with development-specific settings
+#
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  # Traefik - Development Mode (no HTTPS)
+  traefik:
+    command:
+      # Enable Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=mito-network"
+      # Entry points
+      - "--entrypoints.web.address=:80"
+      # Enable dashboard
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--log.level=DEBUG"
+    labels:
+      # Dashboard on HTTP for development
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.dashboard.entrypoints=web"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
+  # API Service - Development mode with hot reload
+  api:
+    build:
+      context: ../../services/api
+      dockerfile: Dockerfile
+      target: builder  # Use development stage if available
+    environment:
+      NODE_ENV: development
+    volumes:
+      # Mount source code for hot reload (if using tsx watch or nodemon)
+      - ../../services/api/src:/app/src:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api-dev.rule=Host(`api.localhost`)"
+      - "traefik.http.routers.api-dev.entrypoints=web"
+      - "traefik.http.services.api-dev.loadbalancer.server.port=3000"
+
+  # Admin Web - Development mode
+  admin-web:
+    build:
+      context: ../../apps/admin-web
+      dockerfile: Dockerfile
+      target: builder  # Use development stage
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://api.localhost
+    volumes:
+      # Mount source for hot reload
+      - ../../apps/admin-web/src:/app/src:ro
+      - ../../apps/admin-web/app:/app/app:ro
+      - ../../apps/admin-web/public:/app/public:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin-dev.rule=Host(`admin.localhost`)"
+      - "traefik.http.routers.admin-dev.entrypoints=web"
+      - "traefik.http.services.admin-dev.loadbalancer.server.port=3001"
+
+  # MinIO - Development labels
+  minio:
+    environment:
+      MINIO_BROWSER_REDIRECT_URL: http://minio-console.localhost
+    labels:
+      - "traefik.enable=true"
+      # MinIO API
+      - "traefik.http.routers.minio-api-dev.rule=Host(`minio.localhost`)"
+      - "traefik.http.routers.minio-api-dev.entrypoints=web"
+      - "traefik.http.routers.minio-api-dev.service=minio-api-dev"
+      - "traefik.http.services.minio-api-dev.loadbalancer.server.port=9000"
+      # MinIO Console
+      - "traefik.http.routers.minio-console-dev.rule=Host(`minio-console.localhost`)"
+      - "traefik.http.routers.minio-console-dev.entrypoints=web"
+      - "traefik.http.routers.minio-console-dev.service=minio-console-dev"
+      - "traefik.http.services.minio-console-dev.loadbalancer.server.port=9001"
+
+  # Mobile Build - Development labels
+  mobile-build:
+    environment:
+      REACT_NATIVE_PACKAGER_HOSTNAME: mobile-build.localhost
+      API_URL: http://api.localhost
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mobile-dev.rule=Host(`mobile-build.localhost`)"
+      - "traefik.http.routers.mobile-dev.entrypoints=web"
+      - "traefik.http.services.mobile-dev.loadbalancer.server.port=8081"
+
+  # Notifications - Development mode
+  notifications:
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ../../services/notifications/src:/app/src:ro
+
+  # AI Pipeline - Development mode
+  ai-pipeline:
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ../../services/ai-pipeline/src:/app/src:ro

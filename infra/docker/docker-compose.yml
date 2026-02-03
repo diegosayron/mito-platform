@@ -1,0 +1,288 @@
+services:
+  # Traefik - Reverse Proxy with Let's Encrypt
+  traefik:
+    image: traefik:v2.11
+    container_name: mito-traefik
+    restart: unless-stopped
+    command:
+      # Enable Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=mito-network"
+      # Entry points
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # HTTP to HTTPS redirect
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      # Let's Encrypt configuration
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@example.com}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      # Enable dashboard (optional, secure it in production)
+      - "--api.dashboard=true"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "traefik-letsencrypt:/letsencrypt"
+    networks:
+      - mito-network
+    labels:
+      # Dashboard route (protect in production with auth middleware)
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: mito-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PG_USER:-mito_user}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-mito_password}
+      POSTGRES_DB: ${PG_DATABASE:-mito_db}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - mito-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-mito_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache and Queue
+  redis:
+    image: redis:7-alpine
+    container_name: mito-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-mito_redis_pass} --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - mito-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # MinIO Object Storage (S3 compatible)
+  minio:
+    image: minio/minio:latest
+    container_name: mito-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-mito_minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-mito_minio_password}
+      MINIO_BROWSER_REDIRECT_URL: https://minio-console.${DOMAIN:-localhost}
+    volumes:
+      - minio-data:/data
+    networks:
+      - mito-network
+    labels:
+      - "traefik.enable=true"
+      # MinIO API
+      - "traefik.http.routers.minio-api.rule=Host(`minio.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.minio-api.entrypoints=websecure"
+      - "traefik.http.routers.minio-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.minio-api.service=minio-api"
+      - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
+      # MinIO Console
+      - "traefik.http.routers.minio-console.rule=Host(`minio-console.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.minio-console.entrypoints=websecure"
+      - "traefik.http.routers.minio-console.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.minio-console.service=minio-console"
+      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # API Service (Fastify)
+  api:
+    build:
+      context: ../../services/api
+      dockerfile: Dockerfile
+    container_name: mito-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Database
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: ${PG_USER:-mito_user}
+      PG_PASSWORD: ${PG_PASSWORD:-mito_password}
+      PG_DATABASE: ${PG_DATABASE:-mito_db}
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-mito_redis_pass}
+      # MinIO
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-mito_minio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-mito_minio_password}
+      MINIO_USE_SSL: "false"
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-your-refresh-secret-key-change-in-production}
+    networks:
+      - mito-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`api.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.api.entrypoints=websecure"
+      - "traefik.http.routers.api.tls.certresolver=letsencrypt"
+      - "traefik.http.services.api.loadbalancer.server.port=3000"
+      # Rate limiting middleware (optional)
+      - "traefik.http.middlewares.api-ratelimit.ratelimit.average=100"
+      - "traefik.http.middlewares.api-ratelimit.ratelimit.burst=50"
+      - "traefik.http.routers.api.middlewares=api-ratelimit"
+
+  # Admin Web Portal (Next.js)
+  admin-web:
+    build:
+      context: ../../apps/admin-web
+      dockerfile: Dockerfile
+    container_name: mito-admin-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      NEXT_PUBLIC_API_URL: https://api.${DOMAIN:-localhost}
+    networks:
+      - mito-network
+    depends_on:
+      - api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin.rule=Host(`admin.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.admin.entrypoints=websecure"
+      - "traefik.http.routers.admin.tls.certresolver=letsencrypt"
+      - "traefik.http.services.admin.loadbalancer.server.port=3001"
+
+  # Mobile Build Service (React Native)
+  mobile-build:
+    build:
+      context: ../../apps/mobile
+      dockerfile: Dockerfile
+      target: development
+    container_name: mito-mobile-build
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      REACT_NATIVE_PACKAGER_HOSTNAME: mobile-build.${DOMAIN:-localhost}
+      API_URL: https://api.${DOMAIN:-localhost}
+    networks:
+      - mito-network
+    depends_on:
+      - api
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mobile.rule=Host(`mobile-build.${DOMAIN:-localhost}`)"
+      - "traefik.http.routers.mobile.entrypoints=websecure"
+      - "traefik.http.routers.mobile.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mobile.loadbalancer.server.port=8081"
+
+  # Notifications Worker Service
+  notifications:
+    build:
+      context: ../../services/notifications
+      dockerfile: Dockerfile
+    container_name: mito-notifications
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Database
+      PG_HOST: postgres
+      PG_PORT: 5432
+      PG_USER: ${PG_USER:-mito_user}
+      PG_PASSWORD: ${PG_PASSWORD:-mito_password}
+      PG_DATABASE: ${PG_DATABASE:-mito_db}
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-mito_redis_pass}
+      # SMTP
+      SMTP_HOST: ${SMTP_HOST:-smtp.example.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-notifications@example.com}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-smtp_password}
+      SMTP_FROM: ${SMTP_FROM:-MITO Platform <noreply@example.com>}
+      # Firebase
+      FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-}
+      FIREBASE_PRIVATE_KEY: ${FIREBASE_PRIVATE_KEY:-}
+      FIREBASE_CLIENT_EMAIL: ${FIREBASE_CLIENT_EMAIL:-}
+    networks:
+      - mito-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # AI Pipeline Worker Service
+  ai-pipeline:
+    build:
+      context: ../../services/ai-pipeline
+      dockerfile: Dockerfile
+    container_name: mito-ai-pipeline
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-mito_redis_pass}
+      # OpenAI
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # Google Gemini
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      # MinIO
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-mito_minio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-mito_minio_password}
+      MINIO_USE_SSL: "false"
+    networks:
+      - mito-network
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+networks:
+  mito-network:
+    name: mito-network
+    driver: bridge
+
+volumes:
+  traefik-letsencrypt:
+    name: mito-traefik-letsencrypt
+  postgres-data:
+    name: mito-postgres-data
+  redis-data:
+    name: mito-redis-data
+  minio-data:
+    name: mito-minio-data
