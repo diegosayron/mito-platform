@@ -204,7 +204,7 @@ export class ScrapingService {
         content,
         sourceDate,
       };
-    } catch (error) {
+    } catch {
       // Return null to trigger dynamic scraping fallback
       return null;
     }
@@ -237,7 +237,7 @@ export class ScrapingService {
         const unwanted = document.querySelectorAll(
           'script, style, nav, header, footer, .advertisement, .ads'
         );
-        unwanted.forEach((el) => el.remove());
+        unwanted.forEach((el: Element) => el.remove());
 
         // Get title
         const title = document.title || 
@@ -267,7 +267,7 @@ export class ScrapingService {
         // Fallback to paragraphs
         if (!content || content.length < 100) {
           const paragraphs = Array.from(document.querySelectorAll('p'));
-          content = paragraphs.map((p) => p.textContent?.trim() || '').join('\n\n');
+          content = paragraphs.map((p: Element) => p.textContent?.trim() || '').join('\n\n');
         }
 
         // Get date

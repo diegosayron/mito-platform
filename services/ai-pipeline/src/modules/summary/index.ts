@@ -104,8 +104,8 @@ PONTOS-CHAVE:
    * Note: This is a placeholder for future implementation
    */
   private async generateWithGemini(
-    content: string,
-    maxLength: number
+    _content: string,
+    _maxLength: number
   ): Promise<{ summary: string; keyPoints: string[] }> {
     // Placeholder for Gemini integration
     // You would use @google/generative-ai package here

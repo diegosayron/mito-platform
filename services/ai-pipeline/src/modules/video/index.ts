@@ -57,7 +57,7 @@ export class VideoService {
    * Used when video service is not configured
    */
   private generatePlaceholder(
-    text: string
+    _text: string
   ): { videoUrl: string; thumbnailUrl?: string; duration?: number } {
     // Return placeholder data
     // In production, this might:

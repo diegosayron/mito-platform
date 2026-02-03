@@ -71,7 +71,7 @@ const registerRoutes = async () => {
   // Get job status endpoint
   fastify.get<{
     Params: { jobId: string };
-  }>('/api/v1/pipeline/status/:jobId', async (request, reply) => {
+  }>('/api/v1/pipeline/status/:jobId', async (request) => {
     const { jobId } = request.params;
 
     // This is a placeholder - in production, you'd track job status across all queues
