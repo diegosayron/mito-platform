@@ -81,9 +81,9 @@ const config: Config = {
     poolMax: parseInt(process.env.DB_POOL_MAX || '10', 10),
   },
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key',
+    secret: process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION_JWT_SECRET',
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
-    refreshSecret: process.env.REFRESH_TOKEN_SECRET || 'your-super-secret-refresh-token-key',
+    refreshSecret: process.env.REFRESH_TOKEN_SECRET || 'CHANGE_ME_IN_PRODUCTION_REFRESH_TOKEN_SECRET',
     refreshExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d',
   },
   redis: {
@@ -130,8 +130,8 @@ const config: Config = {
 
 // Validate critical production configurations
 if (config.server.env === 'production') {
-  const defaultJwtSecret = 'your-super-secret-jwt-key';
-  const defaultRefreshSecret = 'your-super-secret-refresh-token-key';
+  const defaultJwtSecret = 'CHANGE_ME_IN_PRODUCTION_JWT_SECRET';
+  const defaultRefreshSecret = 'CHANGE_ME_IN_PRODUCTION_REFRESH_TOKEN_SECRET';
   
   if (config.jwt.secret === defaultJwtSecret || !process.env.JWT_SECRET) {
     throw new Error(
