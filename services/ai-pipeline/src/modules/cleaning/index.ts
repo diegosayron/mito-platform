@@ -10,15 +10,27 @@ const MIN_PARAGRAPH_LENGTH = 50; // Minimum characters for meaningful paragraph
 export class CleaningService {
   /**
    * Remove HTML tags and entities
+   * 
+   * Security Note: This function performs multi-pass sanitization to prevent
+   * HTML injection. The output is used only for AI text processing and is never
+   * rendered as HTML. Even if malformed HTML remains, it poses no security risk
+   * in this context.
    */
   private removeHtmlTags(text: string): string {
-    return text
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
+    // First pass: remove all complete HTML tags
+    let cleaned = text.replace(/<[^>]*>/g, '');
+    
+    // Second pass: remove any remaining angle brackets (incomplete tags)
+    // This addresses CodeQL's incomplete-multi-character-sanitization concern
+    cleaned = cleaned.replace(/</g, '').replace(/>/g, '');
+    
+    // Third pass: decode HTML entities
+    return cleaned
       .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
       .replace(/&quot;/g, '"') // Replace &quot; with "
       .replace(/&apos;/g, "'") // Replace &apos; with '
-      .replace(/&lt;/g, '<') // Replace &lt; with <
-      .replace(/&gt;/g, '>') // Replace &gt; with >
+      .replace(/&lt;/g, '') // Remove &lt; (< already removed)
+      .replace(/&gt;/g, '') // Remove &gt; (> already removed)
       .replace(/&amp;/g, '&'); // Replace &amp; with &
   }
 
