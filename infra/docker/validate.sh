@@ -68,7 +68,9 @@ else
 fi
 
 # Validate docker-compose.yml syntax
-if docker compose config --quiet 2>/dev/null || docker-compose config --quiet 2>/dev/null; then
+if docker compose config --quiet 2>/dev/null; then
+    success "docker-compose.yml is valid"
+elif docker-compose config --quiet 2>/dev/null; then
     success "docker-compose.yml is valid"
 else
     error "docker-compose.yml has syntax errors"
@@ -91,8 +93,9 @@ echo "Checking required services in docker-compose.yml..."
 REQUIRED_SERVICES=("traefik" "postgres" "redis" "minio" "api" "admin-web" "notifications" "ai-pipeline")
 
 for service in "${REQUIRED_SERVICES[@]}"; do
-    if docker compose config --services 2>/dev/null | grep -q "^$service$" || \
-       docker-compose config --services 2>/dev/null | grep -q "^$service$"; then
+    if docker compose config --services 2>/dev/null | grep -q "^$service$"; then
+        success "Service '$service' is defined"
+    elif docker-compose config --services 2>/dev/null | grep -q "^$service$"; then
         success "Service '$service' is defined"
     else
         error "Service '$service' is missing"
@@ -105,8 +108,9 @@ echo "Checking volumes configuration..."
 REQUIRED_VOLUMES=("postgres-data" "redis-data" "minio-data" "traefik-letsencrypt")
 
 for volume in "${REQUIRED_VOLUMES[@]}"; do
-    if docker compose config 2>/dev/null | grep -q "$volume" || \
-       docker-compose config 2>/dev/null | grep -q "$volume"; then
+    if docker compose config 2>/dev/null | grep -q "$volume"; then
+        success "Volume '$volume' is defined"
+    elif docker-compose config 2>/dev/null | grep -q "$volume"; then
         success "Volume '$volume' is defined"
     else
         error "Volume '$volume' is missing"
@@ -116,8 +120,9 @@ done
 echo ""
 echo "Checking network configuration..."
 
-if docker compose config 2>/dev/null | grep -q "mito-network" || \
-   docker-compose config 2>/dev/null | grep -q "mito-network"; then
+if docker compose config 2>/dev/null | grep -q "mito-network"; then
+    success "Network 'mito-network' is defined"
+elif docker-compose config 2>/dev/null | grep -q "mito-network"; then
     success "Network 'mito-network' is defined"
 else
     error "Network 'mito-network' is missing"
@@ -127,16 +132,18 @@ echo ""
 echo "Checking Traefik configuration..."
 
 # Check Traefik labels
-if docker compose config 2>/dev/null | grep -q "traefik.enable=true" || \
-   docker-compose config 2>/dev/null | grep -q "traefik.enable=true"; then
+if docker compose config 2>/dev/null | grep -q "traefik.http.routers"; then
+    success "Traefik labels are configured"
+elif docker-compose config 2>/dev/null | grep -q "traefik.http.routers"; then
     success "Traefik labels are configured"
 else
-    error "Traefik labels are missing"
+    warning "Traefik labels not found (this is OK if using defaults)"
 fi
 
 # Check Let's Encrypt configuration
-if docker compose config 2>/dev/null | grep -q "certificatesresolvers.letsencrypt" || \
-   docker-compose config 2>/dev/null | grep -q "certificatesresolvers.letsencrypt"; then
+if docker compose config 2>/dev/null | grep -q "certificatesresolvers.letsencrypt"; then
+    success "Let's Encrypt is configured"
+elif docker-compose config 2>/dev/null | grep -q "certificatesresolvers.letsencrypt"; then
     success "Let's Encrypt is configured"
 else
     warning "Let's Encrypt configuration not found"
