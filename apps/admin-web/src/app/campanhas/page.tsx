@@ -44,7 +44,7 @@ export default function CampanhasPage() {
 
           <div className="p-6">
             <div className="text-center text-gray-500">
-              Nenhuma campanha encontrada. Clique em "Nova Campanha" para adicionar.
+              Nenhuma campanha encontrada. Clique em &quot;Nova Campanha&quot; para adicionar.
             </div>
           </div>
         </div>

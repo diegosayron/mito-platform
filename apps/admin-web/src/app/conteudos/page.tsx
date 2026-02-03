@@ -37,7 +37,7 @@ export default function ConteudosPage() {
       {/* Content List */}
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 text-center text-gray-500">
-          Nenhum conteúdo encontrado. Clique em "Novo Conteúdo" para adicionar.
+          Nenhum conteúdo encontrado. Clique em &quot;Novo Conteúdo&quot; para adicionar.
         </div>
       </div>
     </div>

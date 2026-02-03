@@ -28,8 +28,6 @@ export default function LoginPage() {
       if (!result.success) {
         setError(result.error || 'Falha ao fazer login');
       }
-    } catch (err) {
-      setError('Erro ao fazer login. Tente novamente.');
     } finally {
       setIsLoading(false);
     }

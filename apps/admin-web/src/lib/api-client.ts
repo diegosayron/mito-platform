@@ -4,7 +4,7 @@
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   data?: T;
   error?: string;
   message?: string;
@@ -64,7 +64,7 @@ class ApiClient {
     localStorage.removeItem('refreshToken');
   }
 
-  async request<T = any>(
+  async request<T = unknown>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
@@ -95,25 +95,25 @@ class ApiClient {
     }
   }
 
-  async get<T = any>(endpoint: string): Promise<ApiResponse<T>> {
+  async get<T = unknown>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { method: 'GET' });
   }
 
-  async post<T = any>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
+  async post<T = unknown>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(body),
     });
   }
 
-  async put<T = any>(endpoint: string, body?: any): Promise<ApiResponse<T>> {
+  async put<T = unknown>(endpoint: string, body?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(body),
     });
   }
 
-  async delete<T = any>(endpoint: string): Promise<ApiResponse<T>> {
+  async delete<T = unknown>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
