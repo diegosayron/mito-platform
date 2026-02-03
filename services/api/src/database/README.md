@@ -95,6 +95,9 @@ BEGIN
     ALTER TABLE users ADD COLUMN phone VARCHAR(20);
   END IF;
 END $$;
+
+-- Note: For timestamp columns with updated_at, you'll need to ensure
+-- the update_updated_at_column() trigger is applied to the table
 ```
 
 ## Database Connection Pool
