@@ -2,6 +2,10 @@ import axios from 'axios';
 import config from '../../config';
 import { SchedulingJobData, SchedulingResult } from '../../types';
 
+// Constants for tag extraction
+const MIN_TAG_WORD_LENGTH = 4;
+const MAX_TITLE_TAGS = 3;
+
 /**
  * Scheduling module for publishing content to the main API
  */
@@ -107,10 +111,10 @@ export class SchedulingService {
     const titleWords = contentData.title
       .toLowerCase()
       .split(/\s+/)
-      .filter((word) => word.length > 4); // Only words longer than 4 chars
+      .filter((word) => word.length > MIN_TAG_WORD_LENGTH); // Only words longer than configured length
 
-    // Add up to 3 keywords from title
-    tags.push(...titleWords.slice(0, 3));
+    // Add up to configured max keywords from title
+    tags.push(...titleWords.slice(0, MAX_TITLE_TAGS));
 
     // Add "ai-generated" tag
     tags.push('ia-gerado');

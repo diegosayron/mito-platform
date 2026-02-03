@@ -1,5 +1,9 @@
 import { CleaningJobData, CleaningResult } from '../../types';
 
+// Constants for cleaning configuration
+const MIN_WORD_COUNT = 20; // Minimum words required to keep content
+const MIN_PARAGRAPH_LENGTH = 50; // Minimum characters for meaningful paragraph
+
 /**
  * Cleaning module for processing and sanitizing scraped content
  */
@@ -100,7 +104,7 @@ export class CleaningService {
   /**
    * Extract meaningful paragraphs (filter out very short ones)
    */
-  private extractMeaningfulParagraphs(text: string, minLength: number = 50): string {
+  private extractMeaningfulParagraphs(text: string, minLength: number = MIN_PARAGRAPH_LENGTH): string {
     const paragraphs = text.split('\n\n');
     const meaningful = paragraphs.filter((p) => {
       const trimmed = p.trim();
@@ -165,7 +169,7 @@ export class CleaningService {
     });
 
     // Filter out items with insufficient content
-    const filtered = cleanedContent.filter((item) => item.wordCount > 20);
+    const filtered = cleanedContent.filter((item) => item.wordCount > MIN_WORD_COUNT);
 
     return {
       jobId: data.jobId,

@@ -54,7 +54,8 @@ const registerRoutes = async () => {
       return reply.code(400).send({ error: 'Missing required fields: query, userId' });
     }
 
-    const jobId = `pipeline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Use crypto.randomUUID for guaranteed unique IDs
+    const jobId = `pipeline-${Date.now()}-${crypto.randomUUID()}`;
 
     // Add job to scraping queue
     const scrapingQueue = getScrapingQueue();
@@ -71,11 +72,15 @@ const registerRoutes = async () => {
   // Get job status endpoint
   fastify.get<{
     Params: { jobId: string };
-  }>('/api/v1/pipeline/status/:jobId', async (request) => {
+  }>('/api/v1/pipeline/status/:jobId', async (request, reply) => {
     const { jobId } = request.params;
 
-    // This is a placeholder - in production, you'd track job status across all queues
-    return { jobId, status: 'processing', message: 'Job status tracking not fully implemented' };
+    // Not implemented yet - return 501
+    return reply.code(501).send({ 
+      error: 'Not Implemented',
+      message: 'Job status tracking will be implemented in a future version',
+      jobId 
+    });
   });
 };
 

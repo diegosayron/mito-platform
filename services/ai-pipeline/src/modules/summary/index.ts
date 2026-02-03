@@ -42,7 +42,7 @@ Analise o seguinte conteúdo e forneça:
 2. Lista de 3-5 pontos-chave principais
 
 Conteúdo:
-${content.substring(0, 12000)} // Limit to ~3000 tokens
+${content.substring(0, 12000)} // Limit to ~12000 chars (approx. 3000 tokens, varies by language)
 
 Formato da resposta:
 RESUMO:
