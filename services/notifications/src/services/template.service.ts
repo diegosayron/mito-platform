@@ -45,11 +45,8 @@ export class TemplateService {
   }
 
   renderTemplate(template: string, variables: Record<string, string | number>): string {
-    let rendered = template;
-    for (const [key, value] of Object.entries(variables)) {
-      const regex = new RegExp(`{{${key}}}`, 'g');
-      rendered = rendered.replace(regex, String(value));
-    }
-    return rendered;
+    return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+      return key in variables ? String(variables[key]) : match;
+    });
   }
 }
