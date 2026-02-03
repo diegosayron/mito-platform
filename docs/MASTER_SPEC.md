@@ -204,3 +204,41 @@ Logs
 
 ## 22. Fonte Única de Verdade
 Este documento deve ser seguido por todos os componentes do sistema.
+
+## 23. Tabela de Entidades (modelo lógico)
+| Entidade      | Campos principais                            |
+| ------------- | -------------------------------------------- |
+| users         | id, email, password_hash, status, created_at |
+| subscriptions | id, user_id, plan, start_at, end_at, status  |
+| contents      | id, type, title, body, status, publish_at    |
+| media_files   | id, type, storage_key, cdn_url               |
+| comments      | id, content_id, user_id, text, blocked       |
+| reports       | id, target_type, target_id, reason, status   |
+| campaigns     | id, image_url, link, start_at, end_at        |
+| notifications | id, user_id, type, payload                   |
+| badges        | id, name, rule                               |
+| user_badges   | user_id, badge_id                            |
+
+## 24. Fluxo de Publicação de Conteúdo
+Admin cria → status=rascunho
+Admin agenda → status=scheduled
+Scheduler publica → status=published
+Usuários interagem
+Se denúncias >= "n" denúncias (n é um número configurável no painel administrativo web)  → status=hidden
+Admin revisa → restore ou delete
+
+## 25. Fluxo de Assinaturas
+Usuário compra
+→ registra data
+→ agenda alerta
+→ envia e-mail
+→ expira
+→ downgrade
+
+## 26. Fluxo de Denúncias
+Usuário denuncia
+→ incrementa contador
+→ se >= "n" denúncias (n é um número configurável no painel administrativo): oculta
+→ entra fila
+→ admin decide
+→ notifica
