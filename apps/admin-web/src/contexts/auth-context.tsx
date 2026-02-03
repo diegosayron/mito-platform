@@ -14,6 +14,23 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Simple JWT decoder (for client-side only - doesn't verify signature)
+function decodeJWT(token: string): TokenPayload | null {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<TokenPayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,9 +41,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkAuth = () => {
       const token = apiClient.getAccessToken();
       if (token) {
-        // In a real app, you might want to verify the token with the API
-        // For now, we'll just check if it exists
-        setUser({ userId: '', email: '', status: '' }); // Placeholder
+        // Decode the token to get user info
+        const decoded = decodeJWT(token);
+        if (decoded) {
+          setUser(decoded);
+        } else {
+          // Invalid token, clear it
+          apiClient.clearTokens();
+        }
       }
       setIsLoading(false);
     };
