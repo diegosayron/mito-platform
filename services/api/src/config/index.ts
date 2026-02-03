@@ -81,9 +81,9 @@ const config: Config = {
     poolMax: parseInt(process.env.DB_POOL_MAX || '10', 10),
   },
   jwt: {
-    secret: process.env.JWT_SECRET || 'your-super-secret-jwt-key',
+    secret: process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION_JWT_SECRET',
     expiresIn: process.env.JWT_EXPIRES_IN || '15m',
-    refreshSecret: process.env.REFRESH_TOKEN_SECRET || 'your-super-secret-refresh-token-key',
+    refreshSecret: process.env.REFRESH_TOKEN_SECRET || 'CHANGE_ME_IN_PRODUCTION_REFRESH_TOKEN_SECRET',
     refreshExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d',
   },
   redis: {
@@ -109,14 +109,16 @@ const config: Config = {
   firebase: {
     projectId: process.env.FIREBASE_PROJECT_ID || '',
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
-    privateKey: process.env.FIREBASE_PRIVATE_KEY || '',
+    privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
   },
   rateLimit: {
     max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
     timeWindow: parseInt(process.env.RATE_LIMIT_TIME_WINDOW || '60000', 10),
   },
   cors: {
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3001'],
+    origin: process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean)
+      : ['http://localhost:3001'],
   },
   cdn: {
     url: process.env.CDN_URL || 'https://cdn.example.com',
@@ -125,5 +127,23 @@ const config: Config = {
     autoHideReportsThreshold: parseInt(process.env.AUTO_HIDE_REPORTS_THRESHOLD || '5', 10),
   },
 };
+
+// Validate critical production configurations
+if (config.server.env === 'production') {
+  const defaultJwtSecret = 'CHANGE_ME_IN_PRODUCTION_JWT_SECRET';
+  const defaultRefreshSecret = 'CHANGE_ME_IN_PRODUCTION_REFRESH_TOKEN_SECRET';
+  
+  if (config.jwt.secret === defaultJwtSecret || !process.env.JWT_SECRET) {
+    throw new Error(
+      'JWT_SECRET must be set to a secure value in production environment'
+    );
+  }
+  
+  if (config.jwt.refreshSecret === defaultRefreshSecret || !process.env.REFRESH_TOKEN_SECRET) {
+    throw new Error(
+      'REFRESH_TOKEN_SECRET must be set to a secure value in production environment'
+    );
+  }
+}
 
 export default config;

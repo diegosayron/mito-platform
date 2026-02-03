@@ -24,7 +24,17 @@ export const authMiddleware = async (
       });
     }
 
-    const token = authHeader.replace('Bearer ', '');
+    const authHeaderTrimmed = authHeader.trim();
+    const [scheme, ...credentialsParts] = authHeaderTrimmed.split(/\s+/);
+
+    if (!scheme || scheme.toLowerCase() !== 'bearer') {
+      return reply.status(401).send({
+        error: 'Unauthorized',
+        message: 'Invalid authorization scheme',
+      });
+    }
+
+    const token = credentialsParts.join(' ').trim();
 
     if (!token) {
       return reply.status(401).send({
@@ -35,6 +45,7 @@ export const authMiddleware = async (
 
     const payload = verifyAccessToken(token);
     request.user = payload;
+    return;
   } catch (error) {
     return reply.status(401).send({
       error: 'Unauthorized',

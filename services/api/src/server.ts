@@ -36,10 +36,12 @@ const registerPlugins = async () => {
     credentials: true,
   });
 
-  // Rate limiting
+  // Rate limiting (exclude health check endpoints)
   await fastify.register(rateLimit, {
     max: config.rateLimit.max,
     timeWindow: config.rateLimit.timeWindow,
+    skipOnError: true,
+    allowList: ['/health', '/ready', '/live'],
   });
 };
 
@@ -93,12 +95,19 @@ const start = async () => {
 const gracefulShutdown = async () => {
   fastify.log.info('Received shutdown signal, closing server...');
   try {
+    // Set a timeout for graceful shutdown
+    const shutdownTimeout = setTimeout(() => {
+      fastify.log.warn('Shutdown timeout exceeded, forcing exit');
+      process.exit(1);
+    }, 10000);
+    
     await fastify.close();
     await closeDatabase();
+    clearTimeout(shutdownTimeout);
     fastify.log.info('Server closed gracefully');
     process.exit(0);
   } catch (error) {
-    fastify.log.error('Error during shutdown:', error);
+    fastify.log.error({ err: error }, 'Error during shutdown');
     process.exit(1);
   }
 };

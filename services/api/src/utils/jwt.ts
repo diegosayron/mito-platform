@@ -1,4 +1,5 @@
-import jwt from 'jsonwebtoken';
+import jwt, { TokenExpiredError, JsonWebTokenError, SignOptions } from 'jsonwebtoken';
+import type { StringValue } from 'ms';
 import config from '../config';
 
 export interface TokenPayload {
@@ -11,18 +12,20 @@ export interface TokenPayload {
  * Generate access token
  */
 export const generateAccessToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, config.jwt.secret, {
-    expiresIn: config.jwt.expiresIn,
-  });
+  const options: SignOptions = {
+    expiresIn: config.jwt.expiresIn as StringValue,
+  };
+  return jwt.sign(payload, config.jwt.secret, options);
 };
 
 /**
  * Generate refresh token
  */
 export const generateRefreshToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, config.jwt.refreshSecret, {
-    expiresIn: config.jwt.refreshExpiresIn,
-  });
+  const options: SignOptions = {
+    expiresIn: config.jwt.refreshExpiresIn as StringValue,
+  };
+  return jwt.sign(payload, config.jwt.refreshSecret, options);
 };
 
 /**
@@ -32,7 +35,12 @@ export const verifyAccessToken = (token: string): TokenPayload => {
   try {
     return jwt.verify(token, config.jwt.secret) as TokenPayload;
   } catch (error) {
-    throw new Error('Invalid or expired access token');
+    if (error instanceof TokenExpiredError) {
+      throw new Error('Access token has expired');
+    } else if (error instanceof JsonWebTokenError) {
+      throw new Error('Invalid access token');
+    }
+    throw new Error('Failed to verify access token');
   }
 };
 
@@ -43,7 +51,12 @@ export const verifyRefreshToken = (token: string): TokenPayload => {
   try {
     return jwt.verify(token, config.jwt.refreshSecret) as TokenPayload;
   } catch (error) {
-    throw new Error('Invalid or expired refresh token');
+    if (error instanceof TokenExpiredError) {
+      throw new Error('Refresh token has expired');
+    } else if (error instanceof JsonWebTokenError) {
+      throw new Error('Invalid refresh token');
+    }
+    throw new Error('Failed to verify refresh token');
   }
 };
 

@@ -30,7 +30,14 @@ export const initDatabase = async (): Promise<Pool> => {
     client.release();
     return pool;
   } catch (error) {
-    throw new Error(`Failed to connect to database: ${error}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    pool.end(); // Clean up pool on connection failure
+    const finalError = new Error(`Failed to connect to database: ${errorMessage}`);
+    if (errorStack) {
+      finalError.stack = errorStack;
+    }
+    throw finalError;
   }
 };
 
