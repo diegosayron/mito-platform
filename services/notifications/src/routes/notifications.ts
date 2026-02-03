@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { NotificationService } from '../services/notification.service';
 import { TemplateService } from '../services/template.service';
 import { addNotificationJob } from '../queues';
-import { NotificationPayload, NotificationChannel, NotificationType } from '../types';
+import { NotificationPayload } from '../types';
 
 export async function notificationRoutes(
   fastify: FastifyInstance,
@@ -83,7 +83,7 @@ export async function notificationRoutes(
   });
 
   // Get all email templates
-  fastify.get('/api/notifications/templates/email', async (request, reply) => {
+  fastify.get('/api/notifications/templates/email', async (_request, reply) => {
     try {
       const templates = await templateService.getAllEmailTemplates();
       return reply.send(templates);
@@ -94,7 +94,7 @@ export async function notificationRoutes(
   });
 
   // Get all push templates
-  fastify.get('/api/notifications/templates/push', async (request, reply) => {
+  fastify.get('/api/notifications/templates/push', async (_request, reply) => {
     try {
       const templates = await templateService.getAllPushTemplates();
       return reply.send(templates);
