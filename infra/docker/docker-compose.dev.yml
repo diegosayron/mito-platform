@@ -3,8 +3,6 @@
 #
 # Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
-version: '3.8'
-
 services:
   # Traefik - Development Mode (no HTTPS)
   traefik:

@@ -21,6 +21,22 @@ The infrastructure consists of the following services:
 - **MinIO** - S3-compatible object storage
 - **Traefik** - Reverse proxy with automatic HTTPS
 
+## Validation
+
+Before starting, you can validate your infrastructure setup:
+
+```bash
+./validate.sh
+```
+
+This script checks:
+- Docker and Docker Compose installation
+- Configuration file syntax
+- Required services and volumes
+- Network configuration
+- Documentation completeness
+- Dockerfile existence
+
 ## Quick Start
 
 ### Prerequisites
