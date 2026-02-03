@@ -62,7 +62,7 @@ Pipeline desacoplado
 Preparado para escala horizontal
 Configuração via variáveis de ambiente
 
-## 6. Gestão de Usuários
+## 6. Gestão de Usuários 
 6.1 Tipos de Usuário
 Free
 Assinante Ativo
@@ -177,6 +177,10 @@ Configuração de mensagens automáticas
 Gestão de campanhas
 Métricas
 Logs de auditoria
+
+17.2 Gestão de usuários do painel administrativo
+As postagens podem passar por moderação ou ter aprovação automática (configurável)
+Deve haver um CRUD para usuários que irão manter o sistema: usuários que irão moderar/aprovar mensagens, textos, postagens, etc.
 
 ## 18. Pipeline Automatizado
 Scraping → Limpeza → IA → Classificação → Vídeo → Agendamento → App
