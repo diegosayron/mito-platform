@@ -167,6 +167,8 @@ SMTP_FROM=MITO Platform <noreply@mito.inbox360.com.br>
 
 # Firebase
 FIREBASE_PROJECT_ID=mito-platform-12345
+# Note: Obtain the private key from Firebase Console → Project Settings → Service Accounts
+# The key should be in the format: -----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n
 FIREBASE_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIE...sua_chave...vQIDAQAB\n-----END PRIVATE KEY-----\n
 FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@mito-platform-12345.iam.gserviceaccount.com
 
