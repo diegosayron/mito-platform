@@ -482,7 +482,10 @@ docker compose up -d --scale ai-pipeline=2
 
 ## 📚 Documentação Adicional
 
+- **[Quick Reference](infra/docker/QUICK-REFERENCE.md)** - 🚀 Guia de referência rápida com comandos essenciais
 - **[Infraestrutura Docker](infra/docker/README.md)** - Guia completo da infraestrutura
+- **[Diagramas de Arquitetura](infra/docker/ARCHITECTURE-DIAGRAM.md)** - Diagramas visuais do deployment
+- **[Guia Portainer](infra/docker/PORTAINER.md)** - Deploy com Portainer e Traefik
 - **[Guia de Produção](infra/docker/PRODUCTION.md)** - Deploy em produção detalhado
 - **[Quick Start](infra/docker/QUICKSTART.md)** - Início rápido
 - **[Arquitetura de Rede](infra/docker/NETWORK.md)** - Detalhes da rede Docker
