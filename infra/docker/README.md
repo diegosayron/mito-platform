@@ -4,6 +4,7 @@ This directory contains the complete Docker infrastructure for the MITO Platform
 
 ## 📚 Documentation
 
+- **[ARCHITECTURE-DIAGRAM.md](ARCHITECTURE-DIAGRAM.md)** - Visual diagrams and deployment flows
 - **[PORTAINER.md](PORTAINER.md)** - Deploy with Portainer and existing Traefik setup
 - **[PORTAINER-EXAMPLE.md](PORTAINER-EXAMPLE.md)** - Configuration examples for Portainer
 - **[PRODUCTION.md](PRODUCTION.md)** - Detailed production deployment guide

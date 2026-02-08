@@ -181,6 +181,8 @@ minio-console.mito.inbox360.com.br → IP_DO_SERVIDOR
 
 #### Opção 1: Usando Portainer com Rede Existente
 
+**📖 Para instruções completas e detalhadas, veja: [infra/docker/PORTAINER.md](infra/docker/PORTAINER.md)**
+
 Se você já tem Portainer rodando com Traefik na rede `automacao`:
 
 1. **Modifique o docker-compose.yml** para usar sua rede existente:
